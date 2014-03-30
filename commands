@@ -42,7 +42,7 @@ case "$1" in
 
 	echo "-----> Injecting OpenCV in $APP"
 
-	id=$(docker run -d $IMAGE /bin/bash -e -c "INSTALL_COMMAND")
+	id=$(docker run -d $IMAGE /bin/bash -e -c "$INSTALL_COMMAND")
 	#enable logs
 	docker attach $id
 	test $(docker wait $id) -eq 0
