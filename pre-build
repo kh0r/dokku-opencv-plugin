@@ -1,0 +1,29 @@
+#!/bin/bash
+
+APP="$1"; IMAGE="app/$APP"
+
+echo "-----> Injecting OpenCV"
+
+DIR=/app
+
+#see http://docs.opencv.org/trunk/doc/tutorials/introduction/linux_install/linux_install.html
+COMMAND=$(cat <<EOF
+apt-get update
+apt-get install -y -q wget curl
+apt-get install -y -q build-essential
+apt-get install -y -q cmake
+curl -L 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.7/opencv-2.4.7.tar.gz/' | tar xvzf -
+mkdir -p opencv-2.4.7/release
+cd opencv-2.4.7/release
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+make && make install
+cd /
+rm -rf opencv-2.4.7
+EOF
+)
+
+id=$(docker run -d $IMAGE /bin/bash -e -c "$COMMAND")
+#enable logs
+docker attach $id
+test $(docker wait $id) -eq 0
+docker commit $id $IMAGE > /dev/null
