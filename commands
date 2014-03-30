@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e;
+#!/bin/bash -e
 
 # Check if name is specified
 if [[ $1 == opencv:* ]]; then
@@ -18,6 +17,22 @@ if [[ $1 == opencv:* ]]; then
     fi
 fi
 
+#see http://docs.opencv.org/trunk/doc/tutorials/introduction/linux_install/linux_install.html
+INSTALL_COMMAND=$(cat <<EOF
+apt-get update
+apt-get install -y -q wget curl
+apt-get install -y -q build-essential
+apt-get install -y -q cmake
+curl -L 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.7/opencv-2.4.7.tar.gz/' | tar xvzf -
+mkdir -p opencv-2.4.7/release
+cd opencv-2.4.7/release
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+make && make install
+cd /
+rm -rf opencv-2.4.7
+EOF
+)
+
 case "$1" in
 
   opencv:install)
@@ -27,34 +42,11 @@ case "$1" in
 
 	echo "-----> Injecting OpenCV in $APP"
 
-	DIR=/app
-
-	#see http://docs.opencv.org/trunk/doc/tutorials/introduction/linux_install/linux_install.html
-	COMMAND=$(cat <<EOF
-	apt-get update
-	apt-get install -y -q wget curl
-	apt-get install -y -q build-essential
-	apt-get install -y -q cmake
-	curl -L 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.7/opencv-2.4.7.tar.gz/' | tar xvzf -
-	mkdir -p opencv-2.4.7/release
-	cd opencv-2.4.7/release
-	cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
-	make && make install
-	cd /
-	rm -rf opencv-2.4.7
-	EOF
-	)
-
-	id=$(docker run -d $IMAGE /bin/bash -e -c "$COMMAND")
+	id=$(docker run -d $IMAGE /bin/bash -e -c "INSTALL_COMMAND")
 	#enable logs
 	docker attach $id
 	test $(docker wait $id) -eq 0
 	docker commit $id $IMAGE > /dev/null
-
-  help)
-    cat && cat<<EOF
-    redis:install <app>
-EOF
     ;;
 
 esac
