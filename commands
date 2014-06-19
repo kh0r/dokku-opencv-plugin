@@ -38,7 +38,7 @@ case "$1" in
   opencv:install)
 
 	APP="$2"
-	IMAGE="app/$APP"
+	IMAGE="dokku/$APP"
 
 	echo "-----> Injecting OpenCV in $APP"
 
