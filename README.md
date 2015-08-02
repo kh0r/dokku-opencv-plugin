@@ -1,4 +1,4 @@
-Redis plugin for OpenCV
+OpenCV plugin for Dokku
 ----------------------
 
 Project: https://github.com/progrium/dokku
